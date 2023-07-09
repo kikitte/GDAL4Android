@@ -1,0 +1,47 @@
+import org.gradle.internal.jvm.Jvm
+
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.example.gdal'
+    compileSdk 33
+
+
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    project.tasks.preBuild.dependsOn("BuildGDALNative")
+
+
+}
+
+
+task BuildGDALNative(type: Exec) {
+    def ndkDir = android.ndkDirectory
+    def apiVersion = 21
+    def javaHome = Jvm.current().getJavaHome()
+    commandLine 'bash', "build_cpp.sh", ndkDir, apiVersion, javaHome
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
