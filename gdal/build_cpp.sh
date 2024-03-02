@@ -3,6 +3,7 @@
 ANDROID_NDK=$1
 MIN_SDK_VERSION=$2
 JAVA_HOME=$3
+BUILD_TYPE=$4 # Debug or Release
 TOOLCHAIN=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64
 
 BUILD_THREADS=$(getconf _NPROCESSORS_ONLN)
@@ -23,7 +24,13 @@ function build_sqlite() {
   local SOURCE_DIR=$(pwd)
 
   cd $BUILD_DIR
-  $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR
+
+
+  if [[ "${BUILD_TYPE,,}" == "release" ]]; then
+    $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR CFLAGS="-O3 -g0 -finline-functions" CPPFLAGS="-O3 -g0 -finline-functions"
+  else
+    $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR CFLAGS="-O0 -g -fno-inline-functions" CPPFLAGS="-O0 -g -fno-inline-functions"
+  fi
 
   make clean
   make -j$BUILD_THREADS
@@ -37,6 +44,8 @@ function build_proj() {
   local BUILD_DIR=$4
   local INSTALL_DIR=$5
   local BUILD_THREADS=$6
+
+  # Build guide(9.2):https://github.com/OSGeo/PROJ/blob/9.2/docs/source/install.rst
 
   cmake -S . -B $BUILD_DIR \
         -DENABLE_TIFF=OFF -DENABLE_CURL=OFF -DBUILD_APPS=OFF -DBUILD_TESTING=OFF \
@@ -52,7 +61,8 @@ function build_proj() {
         -DSFCGAL_CONFIG=disabled \
         -DHDF5_C_COMPILER_EXECUTABLE=disabled \
         -DHDF5_CXX_COMPILER_EXECUTABLE=disabled \
-        -DEXE_SQLITE3=/usr/bin/sqlite3
+        -DEXE_SQLITE3=/usr/bin/sqlite3 \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
 
   cmake --build $BUILD_DIR --parallel $BUILD_THREADS --target install
 }
@@ -69,7 +79,12 @@ function build_expat() {
   local SOURCE_DIR=$(pwd)
 
   cd $BUILD_DIR
-  $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR
+
+  if [[ "${BUILD_TYPE,,}" == "release" ]]; then
+    $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR CFLAGS="-O3 -g0 -finline-functions" CXXFLAGS="-O3 -g0 -finline-functions"
+  else
+    $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR CFLAGS="-O0 -g -fno-inline-functions" CXXFLAGS="-O0 -g -fno-inline-functions"
+  fi
 
   make clean
   make -j$BUILD_THREADS
@@ -108,7 +123,8 @@ function build_gdal() {
    -DGDAL_USE_EXPAT=ON \
    -DBUILD_JAVA_BINDINGS=ON \
    -DBUILD_PYTHON_BINDINGS=OFF \
-   -DBUILD_CSHARP_BINDINGS=OFF
+   -DBUILD_CSHARP_BINDINGS=OFF \
+   -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
 
 
   cmake --build $BUILD_DIR --parallel $BUILD_THREADS --target install
@@ -119,7 +135,7 @@ function build_for_target() {
     local ABI=$2
     local API=$3
 
-    echo "############################ build for $TARGET ###############################"
+    echo "############################ Build for $TARGET: $BUILD_TYPE ###############################"
 
     mkdir -p $SOURCE_DIR
     cd $SOURCE_DIR

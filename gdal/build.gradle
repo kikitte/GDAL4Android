@@ -8,8 +8,6 @@ android {
     namespace 'com.example.gdal'
     compileSdk 33
 
-
-
     defaultConfig {
         minSdk 21
         targetSdk 33
@@ -29,17 +27,29 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    project.tasks.preBuild.dependsOn("BuildGDALNative")
+    libraryVariants.all { variant ->
+        def ndkDir = android.ndkDirectory
+        def apiVersion = 21
+        def javaHome = Jvm.current().getJavaHome()
 
+        if (variant.getName().equals("release")) {
+            task BuildGDALNative_Release(type: Exec) {
+                commandLine 'bash', "build_cpp.sh", ndkDir, apiVersion, javaHome, "Release"
+            }
+        } else if (variant.getName().equals("debug")) {
+            task BuildGDALNative_Debug(type: Exec) {
+                commandLine 'bash', "build_cpp.sh", ndkDir, apiVersion, javaHome, "Debug"
+            }
+        }
+    }
 
-}
-
-
-task BuildGDALNative(type: Exec) {
-    def ndkDir = android.ndkDirectory
-    def apiVersion = 21
-    def javaHome = Jvm.current().getJavaHome()
-    commandLine 'bash', "build_cpp.sh", ndkDir, apiVersion, javaHome
+    project.tasks.whenTaskAdded { task ->
+        if (task.name == "assembleRelease") {
+            task.dependsOn "BuildGDALNative_Release"
+        } else if (task.name == "assembleDebug") {
+            task.dependsOn "BuildGDALNative_Debug"
+        }
+    }
 }
 
 dependencies {

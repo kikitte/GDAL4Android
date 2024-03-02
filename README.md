@@ -8,7 +8,7 @@ Version Info: GDAL 3.7.0, PROJ 9.2.1, SQLITE 3.42.0, EXPAT 2.5.0(used for kml su
 
 
 
-### Build with Docker
+### Build with Docker(Recommend)
 
 This project provides a Dockerfile which you can build a docker image which is suitable to build GDAL4Android without environment problems. Below is some examples about how you can build GDAL4Android with docker.
 
@@ -34,12 +34,12 @@ cp /root/GDAL4Android/docker/cmake_modules/FindJNI.cmake /usr/share/cmake-3.22/M
 cd /root/GDAL4Android
 
 # build gdal aar, the output aar file is in: GDAL4Android/gdal/build/outputs/aar/gdal-release.aar
-./gradlew :gdal:assembleReleas
+./gradlew gdal:assembleRelease
 # build gdaltest apk, the output apk fiel is in: GDAL4Android/gdaltest/build/outputs/apk/debug/gdaltest-debug.apk
 ./gradlew :gdaltest:assembleDebug
 ```
 
-### Building Requirements
+### Build on local machine
 
 - Linux
 
@@ -57,13 +57,16 @@ cd /root/GDAL4Android
 
 You may encounter problems caused by development environment, if something is missing, just install it.
 
-### Building Processes
+How to build?
 
-Just select gdal module in the project panel and make it from the build menu. The output arr file is located at gdal/build/outputs/aar/gdal-release.aar.
+```bash
+cd <GDAL4Android root directory>
 
-![make_gdal_module](./screenshots/make_gdal_module.png)
-
-You can also download the build version in the release page.
+# build gdal aar, the output aar file is in: GDAL4Android/gdal/build/outputs/aar/gdal-release.aar
+./gradlew gdal:assembleRelease
+# build gdaltest apk, the output apk fiel is in: GDAL4Android/gdaltest/build/outputs/apk/debug/gdaltest-debug.apk
+./gradlew :gdaltest:assembleDebug
+```
 
 ### Credit
 
