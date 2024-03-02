@@ -33,10 +33,12 @@ cp /root/GDAL4Android/docker/cmake_modules/FindJNI.cmake /usr/share/cmake-3.22/M
 # change working direction to the project root direcory
 cd /root/GDAL4Android
 
+# clean project first
+./gradlew gdal:clean
 # build gdal aar, the output aar file is in: GDAL4Android/gdal/build/outputs/aar/gdal-release.aar
 ./gradlew gdal:assembleRelease
 # build gdaltest apk, the output apk fiel is in: GDAL4Android/gdaltest/build/outputs/apk/debug/gdaltest-debug.apk
-./gradlew :gdaltest:assembleDebug
+./gradlew gdaltest:assembleDebug
 ```
 
 ### Build on local machine
@@ -62,10 +64,12 @@ How to build?
 ```bash
 cd <GDAL4Android root directory>
 
+# clean project first
+./gradlew gdal:clean
 # build gdal aar, the output aar file is in: GDAL4Android/gdal/build/outputs/aar/gdal-release.aar
 ./gradlew gdal:assembleRelease
 # build gdaltest apk, the output apk fiel is in: GDAL4Android/gdaltest/build/outputs/apk/debug/gdaltest-debug.apk
-./gradlew :gdaltest:assembleDebug
+./gradlew gdaltest:assembleDebug
 ```
 
 ### Credit

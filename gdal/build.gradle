@@ -48,8 +48,17 @@ android {
             task.dependsOn "BuildGDALNative_Release"
         } else if (task.name == "assembleDebug") {
             task.dependsOn "BuildGDALNative_Debug"
+        } else if (task.name == "BuildGDALNative_Release"
+                || task.name == "BuildGDALNative_Debug") {
+            task.dependsOn "cleanJni"
         }
     }
+
+    task cleanJni(type: Delete) {
+        delete "libs"
+        delete "src/main/jniLibs"
+    }
+    clean.dependsOn cleanJni
 }
 
 dependencies {
