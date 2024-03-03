@@ -24,7 +24,17 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("GDAL Version is ${gdal.VersionInfo()}")
+                    gdal.AllRegister()
+
+                    val sb = StringBuilder()
+                    sb.append("\nGDAL Version is ${gdal.VersionInfo()}\n\n")
+                    sb.append("Supported Drivers:\n")
+                    for (i in 1..gdal.GetDriverCount()) {
+                        sb.append("\t")
+                        val driver = gdal.GetDriver(i-1)
+                        sb.append("${driver.longName}\n")
+                    }
+                    Greeting(sb.toString())
                 }
             }
         }
