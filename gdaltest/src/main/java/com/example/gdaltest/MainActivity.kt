@@ -16,6 +16,7 @@ import com.example.gdaltest.ui.theme.GDAL4AndroidTheme
 import org.gdal.gdal.gdal
 import org.gdal.ogr.ogr
 import java.io.File
+import java.nio.charset.Charset
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,11 +56,19 @@ class MainActivity : ComponentActivity() {
                     }
                     sb.append("######################################################\n")
 
+                    var isGB2312 = false
+
                     val chineseShpPath = File(gdalTestDataDir, "shp中文测试.zip").absolutePath
                     val chineseShpDataset = ogr.Open("/vsizip/${chineseShpPath}/shp中文测试.shp")
+
                     // Open standalone Shpefile also ok.
 //                    val chineseShpPath = File(gdalTestDataDir, "shp中文测试2.shp").absolutePath
 //                    val chineseShpDataset = ogr.Open(chineseShpPath)
+
+                    // Open Shapfile encoded in gb2312
+//                    val chineseShpPath = File(gdalTestDataDir, "shp中文测试3_GB2312.shp").absolutePath
+//                    val chineseShpDataset = ogr.Open(chineseShpPath)
+//                    isGB2312 = true
 
                     val chineseShpLayer = chineseShpDataset.GetLayer(0)
                     chineseShpLayer.ResetReading()
@@ -69,7 +78,13 @@ class MainActivity : ComponentActivity() {
                         sb.append(chineseShpFeat.GetGeometryRef().ExportToWkt())
                         sb.append("\n")
                         sb.append("Property: ")
-                        sb.append(chineseShpFeat.GetFieldAsString("name"))
+                        if (isGB2312) {
+                            val byteContent = chineseShpFeat.GetFieldAsBinary("name")
+                            val str = String(byteContent, Charset.forName("GB2312"))
+                            sb.append(str)
+                        } else {
+                            sb.append(chineseShpFeat.GetFieldAsString("name"))
+                        }
                         sb.append("\n")
                         chineseShpFeat = chineseShpLayer.GetNextFeature()
                     }
