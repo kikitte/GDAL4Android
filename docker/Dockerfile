@@ -15,4 +15,5 @@ RUN cd $ANDROID_SDK_ROOT && \
     ./cmdline-tools/bin/sdkmanager "build-tools;30.0.3" --sdk_root=$ANDROID_SDK_ROOT && \
     ./cmdline-tools/bin/sdkmanager "ndk;25.1.8937393" --sdk_root=$ANDROID_SDK_ROOT
 
+ENV LANG C.UTF-8
 ENV ANDROID_HOME=$ANDROID_SDK_ROOT
