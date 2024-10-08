@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS builder
+FROM --platform=linux/amd64 ubuntu:22.04 AS builder
 
 RUN apt-get update && \
     apt-get install -y openjdk-17-jdk wget unzip make cmake libtool sqlite3 swig ant
