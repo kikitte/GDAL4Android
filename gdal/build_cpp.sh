@@ -13,6 +13,29 @@ SOURCE_DIR=$(realpath "$(dirname $0)")/cpp
 
 # build for different targets
 
+function build_iconv() {
+  local TARGET=$1
+  local ABI=$2
+  local API=$3
+  local BUILD_DIR=$4
+  local INSTALL_DIR=$5
+  local BUILD_THREADS=$6
+
+  local SOURCE_DIR=$(pwd)
+
+  cd $BUILD_DIR
+
+  if [[ "${BUILD_TYPE,,}" == "release" ]]; then
+    $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR CFLAGS="-O3 -g0 -finline-functions" CXXFLAGS="-O3 -g0 -finline-functions"
+  else
+    $SOURCE_DIR/configure --host=$TARGET --prefix=$INSTALL_DIR CFLAGS="-O0 -g -fno-inline-functions" CXXFLAGS="-O0 -g -fno-inline-functions"
+  fi
+
+  make clean
+  make -j$BUILD_THREADS
+  make install
+}
+
 function build_sqlite() {
   local TARGET=$1
   local ABI=$2
@@ -124,6 +147,7 @@ function build_gdal() {
    -DBUILD_JAVA_BINDINGS=ON \
    -DBUILD_PYTHON_BINDINGS=OFF \
    -DBUILD_CSHARP_BINDINGS=OFF \
+   -DGDAL_USE_ICONV=ON \
    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
 
 
@@ -145,10 +169,12 @@ function build_for_target() {
     local PROJ=proj-9.2.1
     local GDAL=gdal-3.7.0
     local EXPAT=expat-2.5.0
+    local ICONV=libiconv-1.17
     local SQLITE_TARBALL=$SQLITE.tar.gz
     local PROJ_TARBALL=$PROJ.tar.gz
     local GDAL_TARBALL=$GDAL.tar.gz
     local EXPAT_TARBALL=$EXPAT.tar.gz
+    local ICONV_TARBALL=$ICONV.tar.gz
 
     if [ ! -f  "$SQLITE_TARBALL" ]; then
       wget https://www.sqlite.org/2023/sqlite-autoconf-3420000.tar.gz -O $SQLITE_TARBALL
@@ -160,20 +186,25 @@ function build_for_target() {
       wget https://github.com/OSGeo/gdal/releases/download/v3.7.0/gdal-3.7.0.tar.gz -O $GDAL_TARBALL
     fi
     if [ ! -f "$EXPAT_TARBALL" ]; then
-      wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.gz
+      wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.gz -O $EXPAT_TARBALL
+    fi
+    if [ ! -f "$ICONV_TARBALL" ]; then
+      wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz -O $ICONV_TARBALL
     fi
 
     local SQLITE_SOURCE_DIR=$SOURCE_DIR/$SQLITE
     local PROJ_SOURCE_DIR=$SOURCE_DIR/$PROJ
     local GDAL_SOURCE_DIR=$SOURCE_DIR/$GDAL
     local EXPAT_SOURCE_DIR=$SOURCE_DIR/$EXPAT
+    local ICONV_SOURCE_DIR=$SOURCE_DIR/$ICONV
 
-    rm -rf $SQLITE_SOURCE_DIR $PROJ_SOURCE_DIR $GDAL_SOURCE_DIR $EXPAT_SOURCE_DIR
+    rm -rf $SQLITE_SOURCE_DIR $PROJ_SOURCE_DIR $GDAL_SOURCE_DIR $EXPAT_SOURCE_DIR $ICONV_SOURCE_DIR
 
     tar -xzf $SQLITE_TARBALL
     tar -xzf $PROJ_TARBALL
     tar -xzf $GDAL_TARBALL
     tar -xzf $EXPAT_TARBALL
+    tar -xzf $ICONV_TARBALL
 
     # prepare cross compile environment
     export  AR=$TOOLCHAIN/bin/llvm-ar
@@ -190,6 +221,12 @@ function build_for_target() {
 
     rm -rf $BUILD_DIR $INSTALL_DIR
     mkdir -p $BUILD_DIR $INSTALL_DIR
+
+    local ICONV_BUILD_DIR=$BUILD_DIR/iconv
+    local ICONV_INSTALL_DIR=$INSTALL_DIR
+    mkdir -p $ICONV_BUILD_DIR $ICONV_INSTALL_DIR
+    cd $ICONV_SOURCE_DIR
+    build_iconv $TARGET $ABI $API $ICONV_BUILD_DIR $ICONV_INSTALL_DIR $BUILD_THREADS
 
     local SQLITE_BUILD_DIR=$BUILD_DIR/sqlite
     local SQLITE_INSTALL_DIR=$INSTALL_DIR

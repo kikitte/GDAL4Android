@@ -44,13 +44,10 @@ fun readChineseTestShp3(sb: StringBuilder, path: String): Unit {
     chineseShpLayer.ResetReading()
 
     val nameField = chineseShpLayer.GetLayerDefn().GetFieldDefn(0)
-    val nameFieldStr = String(nameField.GetName().toByteArray(), Charset.forName("GB2312"))
-    // error at Java_org_gdal_ogr_ogrJNI_FieldDefn_1GetNameRef
-    //          if (result) jresult = jenv->NewStringUTF((const char *)result);
-    // looks like cnNameField.GetNameRef() try to interpret a gb2312 encoding c string as utf-8 c string, which result an error.
-//    val cnNameField = chineseShpLayer.GetLayerDefn().GetFieldDefn(1)
-//    val cnNameFieldStr = String(cnNameField.GetNameRef().toByteArray(), Charset.forName("GB2312"))
-    val cnNameFieldStr = "中文名"
+    val nameFieldStr = nameField.GetName()
+    val cnNameFieldIdx = chineseShpLayer.FindFieldIndex("中文名", 1)
+    val cnNameField = chineseShpLayer.GetLayerDefn().GetFieldDefn(cnNameFieldIdx)
+    val cnNameFieldStr = cnNameField.GetName()
 
     var chineseShpFeat = chineseShpLayer.GetNextFeature()
     while (chineseShpFeat != null) {
@@ -60,11 +57,9 @@ fun readChineseTestShp3(sb: StringBuilder, path: String): Unit {
         sb.append("Property: ")
 
         // Note: Since gdal don't support gb2312 encoding by default
-        val nameValueBytes = chineseShpFeat.GetFieldAsBinary(0)
-        val nameValueStr = String(nameValueBytes, Charset.forName("GB2312"))
-        val cnNameValueBytes = chineseShpFeat.GetFieldAsBinary(1)
-        val cnNameValueStr = String(cnNameValueBytes, Charset.forName("GB2312"))
-        sb.append("${nameFieldStr}=${nameValueStr}, ${cnNameFieldStr}=${cnNameValueStr}")
+        val nameValue = chineseShpFeat.GetFieldAsString(0)
+        val cnNameValue = chineseShpFeat.GetFieldAsString(1)
+        sb.append("${nameFieldStr}=${nameValue}, ${cnNameFieldStr}=${cnNameValue}")
 
         sb.append("\n")
         chineseShpFeat = chineseShpLayer.GetNextFeature()

@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
 
                     // Open standalone Shapefile also ok,
                     // utf-8 encoding
-                    readChineseTestShp2(sb, File(gdalTestDataDir, "shp中文测试2.shp").absolutePath)
+//                    readChineseTestShp2(sb, File(gdalTestDataDir, "shp中文测试2.shp").absolutePath)
 
                     // Open Shapfile encoded in gb2312
                     readChineseTestShp3( sb, File(gdalTestDataDir, "shp中文测试3_GB2312.shp").absolutePath )
